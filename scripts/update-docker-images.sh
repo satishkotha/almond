@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euv
 
 # TODO Convert to a mill task
 
