@@ -25,7 +25,7 @@ echo "TAG=$TAG"
 
 if [[ ${TAG} != v* ]]; then
   echo "Not on a git tag, creating snapshot image"
-  ALMOND_VERSION="$(./mill show 'scala.scala-kernel['"$SCALA213_VERSION"'].publishVersion')"
+  ALMOND_VERSION="$(./mill show 'scala.scala-kernel['"$SCALA213_VERSION"'].publishVersion' | jq -r .)"
   echo "ALMOND_VERSION=$ALMOND_VERSION"
   IMAGE_NAME=${DOCKER_REPO}:snapshot
   echo ./mill '__['"$SCALA213_VERSION"'].publishLocal'
