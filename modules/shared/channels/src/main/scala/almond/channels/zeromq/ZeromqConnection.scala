@@ -2,15 +2,16 @@ package almond.channels.zeromq
 
 import java.nio.channels.{ClosedByInterruptException, Selector}
 import java.nio.charset.StandardCharsets.UTF_8
-
 import almond.channels._
 import almond.logger.LoggerContext
 import cats.effect.IO
 import cats.syntax.apply._
-import org.zeromq.{SocketType, ZMQ}
+import org.zeromq.{SocketType, ZMQ, ZMQException}
 import org.zeromq.ZMQ.{PollItem, Poller}
+import zmq.ZError
 
 import scala.concurrent.duration.Duration
+import scala.util.control.NonFatal
 
 final class ZeromqConnection(
   params: ConnectionParameters,
@@ -97,6 +98,17 @@ final class ZeromqConnection(
           setDaemon(true)
           override def run(): Unit = {
 
+            val ignoreExceptions: PartialFunction[Throwable, Unit] = {
+              case ex: ZMQException if ex.getErrorCode == 4 =>
+                log.warn("ignoring ZMQ error 4 received on heart beat channel", ex)
+              case ex: ZError.IOException if ex.getCause.isInstanceOf[ClosedByInterruptException] =>
+                log.warn("ignoring IO error received on heart beat channel", ex)
+              case ex: ClosedByInterruptException =>
+                log.warn("ignoring interrupts on heart beat channel", ex)
+              case NonFatal(error) =>
+                log.error("Unrecoverable error on heartbeat channel", error)
+                throw error
+            }
             val heartbeat = threads.context.socket(repReq)
 
             heartbeat.setLinger(1000)
@@ -106,13 +118,16 @@ final class ZeromqConnection(
             else
               heartbeat.connect(params.heartbeatUri)
 
-            try ZMQ.proxy(heartbeat, heartbeat, null)
-            catch {
-              case _: ClosedByInterruptException =>
-                // ignore
+            try {
+              while (true) {
+                val msg = heartbeat.recv()
+                heartbeat.send(msg) // FIXME Ignoring return value, that indicates success or not
+              }
             }
+            catch ignoreExceptions
             finally {
-              heartbeat.close()
+              try heartbeat.close()
+              catch ignoreExceptions
             }
           }
         }
