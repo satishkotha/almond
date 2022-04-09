@@ -1,5 +1,6 @@
 
 import Settings._
+import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 
 inThisBuild(List(
   organization := "com.apple.pie.almond",
@@ -36,82 +37,82 @@ inThisBuild(List(
 lazy val logger = project
   .underShared
   .settings(
-    shared,
+    getSharedSettings("logger"),
     testSettings,
     libraryDependencies += Deps.scalaReflect.value
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val channels = project
   .underShared
   .dependsOn(logger)
   .settings(
-    shared,
+    getSharedSettings("channels"),
     testSettings,
     libraryDependencies ++= Seq(
       Deps.fs2,
       Deps.jeromq
     )
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val protocol = project
   .underShared
   .dependsOn(channels)
   .settings(
-    shared,
+    getSharedSettings("protocol"),
     libraryDependencies += Deps.argonautShapeless
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `interpreter-api` = project
   .underShared
   .settings(
-    shared
-  )
+    getSharedSettings("interpreter-api"),
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val interpreter = project
   .underShared
   .dependsOn(`interpreter-api`, protocol)
   .settings(
-    shared,
+    getSharedSettings("interpreter"),
     libraryDependencies ++= Seq(
       Deps.scalatags,
       // picked by jboss-logging, that metabrowse transitively depends on
       Deps.slf4jNop
     ),
     testSettings
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val kernel = project
   .underShared
   .dependsOn(interpreter, interpreter % "test->test")
   .settings(
-    shared,
+    getSharedSettings("kernel"),
     testSettings,
     libraryDependencies ++= Seq(
       Deps.caseAppAnnotations,
       Deps.fs2
     )
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val test = project
   .underShared
   .dependsOn(`interpreter-api`)
   .settings(
-    shared
-  )
+    getSharedSettings("test")
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `jupyter-api` = project
   .underScala
   .dependsOn(`interpreter-api`)
   .settings(
-    shared,
+    getSharedSettings("jupyter-api"),
     libraryDependencies += Deps.jvmRepr
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `scala-kernel-api` = project
   .underScala
   .dependsOn(`interpreter-api`, `jupyter-api`)
   .settings(
-    shared,
+    getSharedSettings("scala-kernel-api"),
     crossVersion := CrossVersion.full,
     generatePropertyFile("almond/almond.properties"),
     generateDependenciesFile,
@@ -119,13 +120,13 @@ lazy val `scala-kernel-api` = project
       Deps.ammoniteReplApi.value,
       Deps.jvmRepr
     )
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `scala-interpreter` = project
   .underScala
   .dependsOn(interpreter, `scala-kernel-api`, kernel % "test->test", `almond-rx` % Test)
   .settings(
-    shared,
+    getSharedSettings("scala-interpreter"),
     libraryDependencies ++= {
       val sv = scalaVersion.value
       if (sv.startsWith("2.12.")) {
@@ -146,14 +147,14 @@ lazy val `scala-interpreter` = project
     ),
     crossVersion := CrossVersion.full,
     testSettings
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `scala-kernel` = project
   .underScala
-  .enablePlugins(PackPlugin)
+  .enablePlugins(PackPlugin, JavaAppPackaging)
   .dependsOn(kernel, `scala-interpreter`)
   .settings(
-    shared,
+    getSharedSettings("scala-kernel"),
     crossVersion := CrossVersion.full,
     libraryDependencies += Deps.caseApp,
     packExcludeArtifactTypes -= "source",
@@ -179,17 +180,17 @@ lazy val echo = project
   .underModules
   .dependsOn(kernel, test % Test)
   .settings(
-    shared,
+    getSharedSettings("echo"),
     generatePropertyFile("almond/echo.properties"),
     testSettings,
     libraryDependencies += Deps.caseApp
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `almond-spark` = project
   .underScala
   .dependsOn(`scala-kernel-api` % "provided")
   .settings(
-    shared,
+    getSharedSettings("almond-spark"),
     libraryDependencies ++= Seq(
       Deps.ammoniteReplApi.value % "provided",
       Deps.ammoniteSpark,
@@ -197,16 +198,16 @@ lazy val `almond-spark` = project
       Deps.sparkSql % "provided"
     ),
     onlyIn("2.12")
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val `almond-rx` = project
   .underScala
   .dependsOn(`scala-kernel-api` % Provided)
   .settings(
-    shared,
+    getSharedSettings("almond-rx"),
     libraryDependencies += Deps.scalaRx,
     onlyIn("2.12")
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val almond = project
   .in(file("."))
@@ -227,9 +228,9 @@ lazy val almond = project
     test
   )
   .settings(
-    shared,
+    getSharedSettings("almond"),
     dontPublish
-  )
+  ).enablePlugins(JavaAppPackaging)
 
 lazy val jupyterStart = taskKey[Unit]("")
 lazy val jupyterStop = taskKey[Unit]("")
