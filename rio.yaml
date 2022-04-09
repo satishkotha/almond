@@ -5,6 +5,7 @@ timeout: 30
 machine:
   env:
     RUNTIME_JDK_VERSION: 11
+    SBT_OPTS: -XX:MaxMetaspaceSize=4096M
 
 builds:
   - name: almond-0.8.2-publish
