@@ -20,7 +20,7 @@ builds:
       libraries: false
     finally:
       tag:
-        expression: '${APP_VERSION_1}-${RIO_BUILD_NUMBER}'
+        expression: '0.0.1-${RIO_BUILD_NUMBER}'
 
   - name: almond-0.8.2-docker
     branchName: 0.8.2
