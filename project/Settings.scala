@@ -59,6 +59,8 @@ object Settings {
       "-language:higherKinds",
       "-unchecked"
     ),
+    publishMavenStyle := true,
+    publishArtifact := true,
     resolvers ++= Seq(
       s"apple-releases-$projectName" at "https://artifacts.apple.com/libs-release/",
       s"apple-snapshots-$projectName" at "https://artifacts.apple.com/libs-snapshot/",
