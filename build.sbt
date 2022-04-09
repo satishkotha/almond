@@ -64,8 +64,7 @@ lazy val protocol = project
 lazy val `interpreter-api` = project
   .underShared
   .settings(
-    shared,
-    mima
+    shared
   )
 
 lazy val interpreter = project
@@ -105,7 +104,6 @@ lazy val `jupyter-api` = project
   .dependsOn(`interpreter-api`)
   .settings(
     shared,
-    mima,
     libraryDependencies += Deps.jvmRepr
   )
 
