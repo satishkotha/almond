@@ -221,15 +221,4 @@ object Settings {
       ver
     }
   }
-
-  lazy val mima = Seq(
-    MimaPlugin.autoImport.mimaPreviousArtifacts := {
-      val sv = scalaVersion.value
-
-      Mima.binaryCompatibilityVersions().map { ver =>
-        (organization.value % moduleName.value % ver).cross(crossVersion.value)
-      }
-    }
-  )
-
 }
