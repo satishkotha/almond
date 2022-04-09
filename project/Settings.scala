@@ -46,7 +46,7 @@ object Settings {
     )
   }
 
-  lazy val shared = Seq(
+  def getSharedSettings(projectName: String) = Seq(
     version := packageVersion,
     scalaVersion := scala213,
     crossScalaVersions := Seq(scala213, "2.13.0", scala212, "2.12.9", "2.12.8", "2.12.7", "2.12.6"),
@@ -60,9 +60,9 @@ object Settings {
       "-unchecked"
     ),
     resolvers ++= Seq(
-      Resolver.sonatypeRepo("releases"),
-      "jitpack" at "https://jitpack.io"
-    ),
+      s"apple-releases-$projectName" at "https://artifacts.apple.com/libs-release/",
+      s"apple-snapshots-$projectName" at "https://artifacts.apple.com/libs-snapshot/",
+      Resolver.file(s"local-$projectName", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)),
     // Seems required when cross-publishing for several scala versions
     // with same major and minor numbers (e.g. 2.12.6 and 2.12.7)
     publishConfiguration := publishConfiguration.value.withOverwrite(true),
