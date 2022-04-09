@@ -18,5 +18,17 @@ builds:
       tag:
         expression: '${APP_VERSION_1}-${RIO_BUILD_NUMBER}'
 
-
-
+  - name: almond-0.8.2-docker
+    branchName: 0.8.2
+    build:
+      template: buildozer:v4:publish
+    package:
+      dockerfile:
+        - dockerfilePath: ./Dockerfile
+          name: almond-oss-docker
+          perApplication: false
+          publish:
+            # Publishes to the specified repos and to the Compute namespace.
+            - repo: docker.apple.com/com.apple.pie.spark.ds/spark-almond-oss-kernel
+      mirror:
+        target: silkroad
