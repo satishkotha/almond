@@ -17,7 +17,7 @@ builds:
       template: buildozer:v4:publish
     package:
       release: true
-      libraries: true
+      libraries: false
     finally:
       tag:
         expression: '${APP_VERSION_1}-${RIO_BUILD_NUMBER}'
