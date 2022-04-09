@@ -2,7 +2,7 @@
 import Settings._
 
 inThisBuild(List(
-  organization := "sh.almond",
+  organization := "com.apple.pie.almond",
   homepage := Some(url("https://github.com/almond-sh/almond")),
   licenses := List("BSD-3-Clause" -> url("https://opensource.org/licenses/BSD-3-Clause")),
   developers := List(
