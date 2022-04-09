@@ -1,0 +1,22 @@
+schemaVersion: 2.0
+
+timeout: 30
+
+machine:
+  env:
+    RUNTIME_JDK_VERSION: 11
+
+builds:
+  - name: almond-0.8.2-publish
+    branchName: 0.8.2
+    build:
+      template: buildozer:v4:publish
+    package:
+      release: true
+      libraries: true
+    finally:
+      tag:
+        expression: '${APP_VERSION_1}-${RIO_BUILD_NUMBER}'
+
+
+
