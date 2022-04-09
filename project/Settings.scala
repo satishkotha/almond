@@ -2,7 +2,6 @@
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files
 
-import com.typesafe.tools.mima.plugin.MimaPlugin
 import sbt._
 import sbt.Keys._
 
@@ -48,6 +47,7 @@ object Settings {
   }
 
   lazy val shared = Seq(
+    version := packageVersion,
     scalaVersion := scala213,
     crossScalaVersions := Seq(scala213, "2.13.0", scala212, "2.12.9", "2.12.8", "2.12.7", "2.12.6"),
     scalacOptions ++= Seq(
@@ -192,6 +192,16 @@ object Settings {
     def underShared: Project = {
       val base = project.base.getParentFile / "modules" / "shared" / project.base.getName
       project.in(base)
+    }
+  }
+
+  private lazy val packageVersion: String = {
+    val bufferedSource = scala.io.Source.fromFile("version")
+    try {
+      bufferedSource.mkString.trim
+    }
+    finally {
+      bufferedSource.close()
     }
   }
 
