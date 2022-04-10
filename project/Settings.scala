@@ -1,9 +1,15 @@
 
+import com.typesafe.sbt.packager.MappingsHelper.contentOf
+import com.typesafe.sbt.packager.archetypes.JavaAppPackaging.autoImport.scriptClasspath
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.Universal
+
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files
-
 import sbt._
 import sbt.Keys._
+import sbtassembly.AssemblyKeys.{assemblyMergeStrategy, assemblyShadeRules}
+import sbtassembly.AssemblyPlugin.autoImport.{assembly, assemblyJarName}
+import sbtassembly.{MergeStrategy, PathList, ShadeRule}
 
 object Settings {
 
@@ -103,13 +109,29 @@ object Settings {
       )
     else
       Nil
-  }
+  } ++ packageSettings
 
-  lazy val dontPublish = Seq(
-    publish := {},
-    publishLocal := {},
-    publishArtifact := false
-  )
+  lazy val packageSettings = Seq(
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.rename("shapeless.**" -> "shadeshapless.@1").inAll
+    ),
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", xs@_*) => MergeStrategy.discard
+      case x => MergeStrategy.last
+    },
+    // removes all jar mappings in universal and appends the fat jar
+    mappings in Universal := {
+      // universalMappings: Seq[(File,String)]
+      val universalMappings = (mappings in Universal).value
+      val fatJar = (assembly in Compile).value
+      // removing means filtering
+      val filtered = universalMappings filter {
+        case (file, name) => !name.endsWith(".jar")
+      }
+      // add the fat jar
+      filtered :+ (fatJar -> ("lib/" + fatJar.getName))
+    },
+    scriptClasspath := Seq((assemblyJarName in assembly).value))
 
   def generatePropertyFile(path: String) =
     resourceGenerators.in(Compile) += Def.task {

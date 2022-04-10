@@ -228,8 +228,7 @@ lazy val almond = project
     test
   )
   .settings(
-    getSharedSettings("almond"),
-    dontPublish
+    getSharedSettings("almond")
   ).enablePlugins(JavaAppPackaging)
 
 lazy val jupyterStart = taskKey[Unit]("")
